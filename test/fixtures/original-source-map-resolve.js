@@ -1,5 +1,9 @@
+// source-map-resolve 0.6.0 compatibility fixture (MIT; see ../../LICENSE).
+// Only dependency paths differ from upstream index.js.
+var atob = require("./atob-2.1.2")
 var urlLib = require("url")
 var pathLib = require("path")
+var decodeUriComponentLib = require("./decode-uri-component-0.2.0")
 
 
 
@@ -14,69 +18,8 @@ function convertWindowsPath(aPath) {
 }
 
 function customDecodeUriComponent(string) {
-  try {
-    return decodeURIComponent(string)
-  } catch (error) {
-    return string.replace(/(?:%[a-f0-9]{2})+/gi, decodePercentRun)
-  }
-}
-
-function decodePercentRun(run) {
-  var tokens = run.match(/%[a-f0-9]{2}/gi)
-  var result = ""
-
-  for (var index = 0; index < tokens.length;) {
-    var first = parseInt(tokens[index].slice(1), 16)
-    var length = utf8SequenceLength(first)
-
-    if (first < 0x80) {
-      result += String.fromCharCode(first)
-      index++
-    } else if (length > 0 && hasValidUtf8Sequence(tokens, index, length)) {
-      result += decodeURIComponent(tokens.slice(index, index + length).join(""))
-      index += length
-    } else if (tokens[index] === "%C2") {
-      result += "\uFFFD"
-      index++
-    } else if (
-      index + 1 < tokens.length &&
-      (tokens[index] + tokens[index + 1] === "%FE%FF" ||
-       tokens[index] + tokens[index + 1] === "%FF%FE")
-    ) {
-      result += "\uFFFD\uFFFD"
-      index += 2
-    } else {
-      result += tokens[index]
-      index++
-    }
-  }
-
-  return result
-}
-
-function utf8SequenceLength(first) {
-  if (first >= 0xC2 && first <= 0xDF) return 2
-  if (first >= 0xE0 && first <= 0xEF) return 3
-  if (first >= 0xF0 && first <= 0xF4) return 4
-  return 0
-}
-
-function hasValidUtf8Sequence(tokens, index, length) {
-  if (index + length > tokens.length) return false
-
-  var bytes = []
-  for (var offset = 0; offset < length; offset++) {
-    bytes[offset] = parseInt(tokens[index + offset].slice(1), 16)
-  }
-  for (var continuation = 1; continuation < length; continuation++) {
-    if (bytes[continuation] < 0x80 || bytes[continuation] > 0xBF) return false
-  }
-
-  if (bytes[0] === 0xE0 && bytes[1] < 0xA0) return false
-  if (bytes[0] === 0xED && bytes[1] > 0x9F) return false
-  if (bytes[0] === 0xF0 && bytes[1] < 0x90) return false
-  if (bytes[0] === 0xF4 && bytes[1] > 0x8F) return false
-  return true
+  // `decodeUriComponentLib` turns `+` into ` `, but that's not wanted.
+  return decodeUriComponentLib(string.replace(/\+/g, "%2B"))
 }
 
 function callbackAsync(callback, error, result) {
@@ -182,11 +125,7 @@ var jsonMimeTypeRegex = /^(?:application|text)\/json$/
 var jsonCharacterEncoding = "utf-8"
 
 function base64ToBuf(b64) {
-  if (typeof Buffer !== "undefined") {
-    return new Uint8Array(Buffer.from(b64, "base64"))
-  }
-
-  var binStr = globalThis.atob(b64)
+  var binStr = atob(b64)
   var len = binStr.length
   var arr = new Uint8Array(len)
   for (var i = 0; i < len; i++) {
@@ -197,10 +136,7 @@ function base64ToBuf(b64) {
 
 function decodeBase64String(b64) {
   if (typeof TextDecoder === "undefined" || typeof Uint8Array === "undefined") {
-    if (typeof Buffer !== "undefined") {
-      return Buffer.from(b64, "base64").toString("binary")
-    }
-    return globalThis.atob(b64)
+    return atob(b64)
   }
   var buf = base64ToBuf(b64);
   // Note: `decoder.decode` method will throw a `DOMException` with the
@@ -441,3 +377,5 @@ module.exports = {
   resolveSync:          resolveSync,
   parseMapToJSON:       parseMapToJSON
 }
+
+
