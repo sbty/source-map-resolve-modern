@@ -1,114 +1,56 @@
-### Version 0.6.0 (2020-03-21) ###
+# Changelog
 
-- Removed: The browser version. Only Node.js is now supported.
-- Improved: Three old, weird, tiny dependencies were inlined, which should
-  decrease install size.
+## 1.0.0
 
-### Version 0.5.3 (2019-12-28) ###
+### Compatibility
 
-- Fixed: base64 encoded source maps now correctly decodes as utf-8. Previously,
-  non-ASCII characters could end up garbled. Thanks to ZHAO Jinxiang
-  (@xiaoxiangmoe)! (Note: This fix does not work in old evironments not
-  supporting both `TextDecoder` and `Uint8Array`.)
-- Improved: Reduced size of the npm package.
+- Preserved all seven `source-map-resolve@0.6.0` CommonJS APIs.
+- Preserved callback and synchronous signatures, result shapes, source order,
+  read URLs, `code === null`, XSSI handling, and `error.sourceMapData`.
+- Retained legacy URL and Windows path behavior behind Golden Master and
+  differential tests.
 
-### Version 0.5.2 (2018-05-10) ###
+### Dependencies
 
-- Improved: Updated the version range of `atob` to disallow depending on `2.0.3`
-  which as a [security
-  vulnerability](https://snyk.io/test/npm/atob/2.0.3?severity=high&severity=medium&severity=low).
+- Removed the `atob` runtime package in favor of the standard Node `Buffer`
+  primitive with a browser Web API fallback.
+- Removed `decode-uri-component`; runtime dependencies are now zero.
+- Removed Tape and JSHint; development dependencies are now zero.
 
-### Version 0.5.1 (2017-10-21) ###
+### Security
 
-- Fixed: URLs are now decoded before being passed to `read` in Node.js. This
-  allows reading files with spaces, for example.
-- Fixed: Missing or empty `sources` fields (such as `sources: []`) in source
-  maps are now handled. Previously, such source maps would cause crashes or
-  callbacks never bing called. Now, an empty result is produced:
+- Replaced the vulnerable malformed-percent fallback with bounded linear UTF-8
+  decoding, addressing the applicable denial-of-service advisories.
+- Added long malformed input, large data URI, and invalid UTF-8 baselines.
 
-  ```js
-  sourcesResolved: [],
-  sourcesContent: []
-  ```
+### Implementation
 
-### Version 0.5.0 (2016-02-28) ###
+- Kept the single-file CommonJS implementation and injected `read` design.
+- Added dependency-free TypeScript declarations without adding a build step.
 
-- Improved: Errors now have a `sourceMapData` property that contain as much as
-  possible of the intended result of the function up until the error occurred.
-- Changed: `resolveSources` and `resolve`, as well as their `*Sync`
-  alternatives, no longer fail when one single source fails to be fetched.
-  Instead, the `sourcesContent` array in the result object will contain error
-  objects for all failed sources, and strings otherwise. (Backwards-incompatible
-  change.)
+### Testing
 
-### Version 0.4.0 (2015-08-29) ###
+- Added `node:test` Golden Master coverage for public APIs, callback timing,
+  errors, data URIs, URL classes, source roots, ordering, and Windows paths.
+- Added a self-contained 0.6.0 fixture for differential checks.
 
-- Removed: The `ignoreSourceRoot` option of `resolveSources`. It has been
-  replaced with `sourceRoot: false`. (Backwards-incompatible change.)
-- Added: The `sourceRoot` option of `resolveSources`. It not only allows to
-  ignore the source root, it also lets you replace it.
-- Added: The `parseMapToJSON` method.
-- Added: The `resolve` method now accepts `null, mapUrl, ...` as arguments, in
-  addition to the existing signature, which will read `mapUrl` instead of
-  looking for a sourceMappingURL in the code.
+### CI
 
-### Version 0.3.1 (2014-08-16) ###
+- Added maintained Node 22/24/26 coverage on Linux.
+- Added Node 24 coverage on Windows and macOS.
 
-- Improved: Updated the source-map-url dependency to 0.3.0.
+### Packaging
 
+- Renamed the package to `source-map-resolve-modern`.
+- Added current repository metadata, Node engine requirements, types, and a
+  package-content verification script.
 
-### Version 0.3.0 (2014-07-02) ###
+### Documentation
 
-- Removed: Argument checking. It’s not worth it. (Possibly
-  backwards-incompatible change.)
-- Added: The `sourceRoot` property of source maps may now be ignored, which can
-  be useful when resolving sources outside of the browser.
-- Added: It is now possible to resolve only the URLs of sources, without
-  reading them.
+- Replaced the deprecation notice with migration and API documentation.
+- Added `ANALYSIS.md`, `COMPATIBILITY.md`, and `MODERNIZATION.md`.
 
+## Upstream history
 
-### Version 0.2.0 (2014-06-22) ###
-
-- Changed: The result of `resolveSources` is now an object, not an array. The
-  old result array is available in the `sourcesContent` property.
-  (Backwards-incompatible change.)
-- Changed: `sources` has been renamed to `sourcesContent` in the result object
-  of `resolve`. (Backwards-incompatible change.)
-- Added: `resolveSources` now also returns all sources fully resolved, in the
-  `sourcesResolved` property.
-- Added: The result object of `resolve` now contains the `sourcesResolved`
-  property from `resolveSources`.
-
-
-### Version 0.1.4 (2014-06-16) ###
-
-- Fixed: `sourcesContent` was mis-typed as `sourceContents`, which meant that
-  the `sourcesContent` property of source maps never was used when resolving
-  sources.
-
-
-### Version 0.1.3 (2014-05-06) ###
-
-- Only documentation and meta-data changes.
-
-
-### Version 0.1.2 (2014-03-23) ###
-
-- Improved: Source maps starting with `)]}'` are now parsed correctly. The spec
-  allows source maps to start with that character sequence to prevent XSSI
-  attacks.
-
-
-### Version 0.1.1 (2014-03-06) ###
-
-- Improved: Make sourceRoot resolving more sensible.
-
-  A source root such as `/scripts/subdir` is now treated as `/scripts/subdir/`
-  — that is, as a directory called “subdir”, not a file called “subdir”.
-  Pointing to a file as source root does not makes sense.
-
-
-
-### Version 0.1.0 (2014-03-03) ###
-
-- Initial release.
+The pre-1.0 history is inherited from `source-map-resolve`. See the repository
+history and upstream tags for releases 0.1.0 through 0.6.0.
